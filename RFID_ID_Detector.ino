@@ -33,8 +33,8 @@ void loop() {
   uint8_t obj1[] = {0xF9, 0x3E, 0x4, 0xF4};    //Yellow Tower's id
   uint8_t obj2[] = {0xC9, 0x12, 0xD, 0xF4};    //Blue Tower's id
   uint8_t obj3[] = {0x59, 0xE3, 0xB, 0xF4};    //Red Tower's id
-  uint8_t obj4[] = {0x59, 0xC8, 0x6, 0xF4};    //R
-  uint8_t obj5[] = {0x69, 0xDB, 0x6, 0xF4}; 
+  uint8_t obj4[] = {0x59, 0xC8, 0x6, 0xF4};    //Orange Tower's id
+  uint8_t obj5[] = {0x69, 0xDB, 0x6, 0xF4};    //Purple Tower's id
   uint8_t uidLength;
   detector = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, &uid[0], &uidLength);
   Serial.println(detector);
