@@ -78,6 +78,9 @@ int trigPin = 9;   // J10 on board
 int echoPin = A3;  // this is the ADC pin
 long duration, cm;
 
+/*
+  RFID
+*/
 uint8_t uid[] = { 0, 0, 0, 0 };              // Buffer to store the returned UID from tag
 uint8_t obj1[] = { 0xF9, 0x3E, 0x4, 0xF4 };  // Yellow Tower's id
 uint8_t obj2[] = { 0xC9, 0x12, 0xD, 0xF4 };  // Blue Tower's id
@@ -130,8 +133,6 @@ void setup() {
 
   pinMode(20, OUTPUT);
   pinMode(22, OUTPUT);
-
-
 
   pinMode(IRPin, INPUT);
   pinMode(trigPin, OUTPUT);
@@ -230,10 +231,72 @@ void PID() {
   return;
 }
 
+/************************************
+  RFID sensor code to run in loop
+************************************/
+void readRFID() {
+  // RFID
+  // Serial.println("Hello");
+
+  detector = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, &uid[0], &uidLength);
+
+  Serial.println(detector);
+
+  // If an RFID tag is detected, it will recognize the command on the block and update the stored value
+  if (detector) {
+    Serial.println("Found a tag!");
+    Serial.println("This is .....");
+    if (memcmp(obj1, uid, 4) == 0) {
+      Serial.println("Yellow Block");
+      updated = 'F';
+      delay(10);
+    }
+
+    else if (memcmp(obj2, uid, 4) == 0) {
+      Serial.println("Blue Block");
+      updated = 'B';
+      Serial.println(updated);
+      delay(10);
+    }
+
+    else if (memcmp(obj3, uid, 4) == 0) {
+      Serial.println("Red Block");
+      updated = 'L';
+      Serial.println(updated);
+      delay(10);
+    }
+
+    else if (memcmp(obj4, uid, 4) == 0) {
+      Serial.println("Orange Block");
+      updated = 'R';
+      Serial.println(updated);
+      delay(10);
+    }
+
+    else if (memcmp(obj5, uid, 4) == 0) {
+      Serial.println("Purple Block");
+      updated = 'S';
+      Serial.println(updated);
+      delay(10);
+    }
+
+    else {
+      Serial.println("Not in database");
+      Serial.println(updated);
+      delay(10);
+    }
+
+    delay(500);
+
+  } else {
+    Serial.println("No Objects in Range");
+    delay(1000);
+  }
+}
 
 void loop() {
   // RFID
-  Serial.println("Hello");
+  // Serial.println("Hello");
 
   detector = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, &uid[0], &uidLength);
 
@@ -296,32 +359,32 @@ void loop() {
     switch (updated) {  // function changes the letter value of updated to a command
       case 'F':         // Moves Foward
         Serial.println("Forward");
-        digitalWrite(motor0_dirPin, LOW);
+        digitalWrite(motor0_dirPin, HIGH);
         digitalWrite(motor1_dirPin, HIGH);
         PID();
         break;  // breaks out of the switch loop and continues the original search
 
       case 'B':  // Moves Backwards (back())
         Serial.println("back");
-        digitalWrite(motor0_dirPin, HIGH);
+        digitalWrite(motor0_dirPin, LOW);
         digitalWrite(motor1_dirPin, LOW);
         PID();
         break;  // breaks out of the switch loop and continues the original search
 
       case 'L':  // Moves Left
         Serial.println("Left");
-        digitalWrite(motor0_dirPin, HIGH);
+        digitalWrite(motor0_dirPin, LOW);
         digitalWrite(motor1_dirPin, HIGH);
-        analogWrite(motor0_pwmPin, 150);
-        analogWrite(motor1_pwmPin, 150);
+        analogWrite(motor0_pwmPin, 0);
+        analogWrite(motor1_pwmPin, 255);
         break;  // breaks out of the switch loop and continues the original search
 
       case 'R':  // Moves Right
         Serial.println("RIGHT");
-        digitalWrite(motor0_dirPin, LOW);
+        digitalWrite(motor0_dirPin, HIGH);
         digitalWrite(motor1_dirPin, LOW);
-        analogWrite(motor0_pwmPin, 150);
-        analogWrite(motor1_pwmPin, 150);
+        analogWrite(motor0_pwmPin, 255);
+        analogWrite(motor1_pwmPin, 0);
         break;  // breaks out of the switch loop and continues the original search
 
       case 'S':  // Stops all the motors, makes all pins low
@@ -332,6 +395,8 @@ void loop() {
 
 
       default:  // code run when none of the cases are met
+        analogWrite(motor0_pwmPin, 0);
+        analogWrite(motor1_pwmPin, 0);
         break;  // breaks out of the switch loop and continues the original search
     }
   }
