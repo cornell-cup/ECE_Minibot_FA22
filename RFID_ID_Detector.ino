@@ -29,7 +29,9 @@ void loop() {
   // RFID
   Serial.println("Hello");
   boolean detector;                            //The value that is going to be used to detect whether a tag is found
-  uint8_t uid[] = { 0, 0, 0, 0, 0, 0, 0 };     // Buffer to store the returned UID from tag
+  uint8_t uid[] = { 0, 0, 0, 0, 0, 0, 0 };     //Buffer to store the returned UID from tag. If there is an issue where 
+                                               //the reader seems to only read a certain number of times, take out 3 0s
+                                               //to match with the byte size of the tags.
   uint8_t obj1[] = {0xF9, 0x3E, 0x4, 0xF4};    //Yellow Tower's id
   uint8_t obj2[] = {0xC9, 0x12, 0xD, 0xF4};    //Blue Tower's id
   uint8_t obj3[] = {0x59, 0xE3, 0xB, 0xF4};    //Red Tower's id
