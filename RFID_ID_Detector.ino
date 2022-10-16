@@ -1,6 +1,6 @@
 #include <Wire.h>
-#include <SPI.h> // I think this replaces the PN532_I2C and PN532 libaries
-#include <Adafruit_PN532.h> // I think this replaces the NfcAdapter libary
+#include <SPI.h>
+#include <Adafruit_PN532.h>
 #define PN532_IRQ   (2)
 #define PN532_RESET (3)
 Adafruit_PN532 nfc(PN532_IRQ, PN532_RESET);
