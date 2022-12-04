@@ -87,11 +87,11 @@ int test;
 //char updated;
 volatile byte indx;
 
-int IRPin = 4;  // S4 on J11 **This was just 4 before
+int IRPin = 1;  // S4 on J11 **This was just 4 before
 int in;
-// Ultrasonic Sensor pins
-int trigPin = 9;   // J8 on board
-int echoPin = A3;  // this is the ADC pin
+//// Ultrasonic Sensor pins
+int trigPin = 2;   // J8 on board
+int echoPin = A6;  // this is the ADC pin
 
 long duration, cm;
 volatile boolean process;
@@ -144,8 +144,8 @@ void setup()
   pinMode(22, OUTPUT);
 
   pinMode(IRPin, INPUT);
-  pinMode(trigPin, OUTPUT);
-  pinMode(echoPin, INPUT);
+  //pinMode(trigPin, OUTPUT);
+  //pinMode(echoPin, INPUT);
   test = 0;
 
   process = true;
@@ -322,13 +322,36 @@ void loop()
     //process = false;
     switch (updated) {  // function changes the letter value of updated to a command
       case 'F':         // Moves Foward
+
+        digitalWrite(trigPin, LOW);
+        delayMicroseconds(30);
+        digitalWrite(trigPin, HIGH);
+        delayMicroseconds(30);
+        pinMode(echoPin, INPUT);
+        duration = pulseIn(echoPin, HIGH);
+        cm = (duration/2)/29.1;
+        Serial.print("Centimeters:");
+        Serial.println(cm);
+        
         Serial.println("Forward");
         digitalWrite(motor0_dirPin, HIGH);
         digitalWrite(motor1_dirPin, HIGH);
-        moveForward();
+        PID();
+        
+        //moveForward();
         break;  // breaks out of the switch loop and continues the original search
 
       case 'B':  // Moves Backwards (back())
+        digitalWrite(trigPin, LOW);
+        delayMicroseconds(30);
+        digitalWrite(trigPin, HIGH);
+        delayMicroseconds(30);
+        pinMode(echoPin, INPUT);
+        duration = pulseIn(echoPin, HIGH);
+        cm = (duration/2)/29.1;
+        Serial.print("Centimeters:");
+        Serial.println(cm);
+        
         Serial.println("Back");
         digitalWrite(motor0_dirPin, LOW);
         digitalWrite(motor1_dirPin, LOW);
@@ -336,6 +359,16 @@ void loop()
         break;  // breaks out of the switch loop and continues the original search
 
       case 'L':  // Moves Left
+        digitalWrite(trigPin, LOW);
+        delayMicroseconds(30);
+        digitalWrite(trigPin, HIGH);
+        delayMicroseconds(30);
+        pinMode(echoPin, INPUT);
+        duration = pulseIn(echoPin, HIGH);
+        cm = (duration/2)/29.1;
+        Serial.print("Centimeters:");
+        Serial.println(cm);
+        
         Serial.println("Left");
         digitalWrite(motor0_dirPin, LOW);
         digitalWrite(motor1_dirPin, HIGH);
@@ -344,6 +377,16 @@ void loop()
         break;  // breaks out of the switch loop and continues the original search
 
       case 'R':  // Moves Right
+        digitalWrite(trigPin, LOW);
+        delayMicroseconds(30);
+        digitalWrite(trigPin, HIGH);
+        delayMicroseconds(30);
+        pinMode(echoPin, INPUT);
+        duration = pulseIn(echoPin, HIGH);
+        cm = (duration/2)/29.1;
+        Serial.print("Centimeters:");
+        Serial.println(cm);
+      
         Serial.println("RIGHT");
         digitalWrite(motor0_dirPin, HIGH);
         digitalWrite(motor1_dirPin, LOW);
@@ -470,6 +513,37 @@ void useBuffer()
 }
 ////////I ADDED THINGS DOWN BELOW STRAIGHT FROM GITHUB/////////
 
+/** Adjust the speed of motors with the PID algorithm. */
+void PID() {
+
+  Serial.println("in PID");
+  // Adjust the rotational speeds by the calculated pwm values.
+  analogWrite(motor0_pwmPin, pwm0);
+  analogWrite(motor1_pwmPin, pwm1);
+
+
+  // Count the degrees of rotation in 0.2 seconds for each motor.
+  timeElapsed = 0;
+  while (timeElapsed < 200) {
+    Serial.println("in while");
+    n = digitalRead(encoder0PinA);  // store the current digital signal of the encoder
+    if ((encoder0PinALast == LOW) && (n == HIGH)) {
+      // a switch from HIGH to LOW of the encoder signal marks rotation in 1 degree.
+      encoder0Pos++;
+    }
+    encoder0PinALast = n;  // update the last encoder signal for future comparison
+
+    // same process for left encoder
+    m = digitalRead(encoder1PinA);
+    if ((encoder1PinALast == LOW) && (m == HIGH)) {
+      encoder1Pos++;
+    }
+    encoder1PinALast = m;
+  }
+  adjustPWM();
+  return;
+}
+
 /** Adjust PWM for PID algorithm */
 // add specification for PWM and pins
 void adjustPWM() {
@@ -525,37 +599,6 @@ int calculateSpeed1() {
   int speedDetect = (encoder1Pos - encoder1PrevCount) / timeSec;
   encoder1PrevCount = encoder1Pos;
   return speedDetect;
-}
-
-/** Adjust the speed of motors with the PID algorithm. */
-void PID() {
-
-  Serial.println("in PID");
-  // Adjust the rotational speeds by the calculated pwm values.
-  analogWrite(motor0_pwmPin, pwm0);
-  analogWrite(motor1_pwmPin, pwm1);
-
-
-  // Count the degrees of rotation in 0.2 seconds for each motor.
-  timeElapsed = 0;
-  while (timeElapsed < 200) {
-    Serial.println("in while");
-    n = digitalRead(encoder0PinA);  // store the current digital signal of the encoder
-    if ((encoder0PinALast == LOW) && (n == HIGH)) {
-      // a switch from HIGH to LOW of the encoder signal marks rotation in 1 degree.
-      encoder0Pos++;
-    }
-    encoder0PinALast = n;  // update the last encoder signal for future comparison
-
-    // same process for left encoder
-    m = digitalRead(encoder1PinA);
-    if ((encoder1PinALast == LOW) && (m == HIGH)) {
-      encoder1Pos++;
-    }
-    encoder1PinALast = m;
-  }
-  adjustPWM();
-  return;
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ///************************************
