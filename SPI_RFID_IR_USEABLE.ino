@@ -90,8 +90,8 @@ volatile byte indx;
 int IRPin = 1;  // S4 on J11 **This was just 4 before
 int in;
 //// Ultrasonic Sensor pins
-int trigPin = 2;   // J8 on board
-int echoPin = A6;  // this is the ADC pin
+int trigPin = 5;   // J7 on board pwn pin
+int echoPin = 8;  // this is a regular digital pin
 
 long duration, cm;
 volatile boolean process;
@@ -144,8 +144,8 @@ void setup()
   pinMode(22, OUTPUT);
 
   pinMode(IRPin, INPUT);
-  //pinMode(trigPin, OUTPUT);
-  //pinMode(echoPin, INPUT);
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
   test = 0;
 
   process = true;
@@ -309,7 +309,6 @@ void loop()
       Serial.println(updated);
       delay(10);
     }
-
     delay(500);
 
   } else {
@@ -323,75 +322,79 @@ void loop()
     switch (updated) {  // function changes the letter value of updated to a command
       case 'F':         // Moves Foward
 
-        digitalWrite(trigPin, LOW);
-        delayMicroseconds(30);
-        digitalWrite(trigPin, HIGH);
-        delayMicroseconds(30);
-        pinMode(echoPin, INPUT);
-        duration = pulseIn(echoPin, HIGH);
-        cm = (duration/2)/29.1;
-        Serial.print("Centimeters:");
-        Serial.println(cm);
+//        digitalWrite(trigPin, LOW);
+//        delayMicroseconds(30);
+//        digitalWrite(trigPin, HIGH);
+//        delayMicroseconds(30);
+//        pinMode(echoPin, INPUT);
+//        duration = pulseIn(echoPin, HIGH);
+//        cm = (duration/2)/29.1;
+//        Serial.print("Centimeters:");
+//        Serial.println(cm);
         
         Serial.println("Forward");
         digitalWrite(motor0_dirPin, HIGH);
         digitalWrite(motor1_dirPin, HIGH);
-        PID();
+        moveForward();
+//        PID();
         
         //moveForward();
         break;  // breaks out of the switch loop and continues the original search
 
       case 'B':  // Moves Backwards (back())
-        digitalWrite(trigPin, LOW);
-        delayMicroseconds(30);
-        digitalWrite(trigPin, HIGH);
-        delayMicroseconds(30);
-        pinMode(echoPin, INPUT);
-        duration = pulseIn(echoPin, HIGH);
-        cm = (duration/2)/29.1;
-        Serial.print("Centimeters:");
-        Serial.println(cm);
+//         digitalWrite(trigPin, LOW);
+//         delayMicroseconds(30);
+//         digitalWrite(trigPin, HIGH);
+//         delayMicroseconds(30);
+//         pinMode(echoPin, INPUT);
+//         duration = pulseIn(echoPin, HIGH);
+//         cm = (duration/2)/29.1;
+//         Serial.print("Centimeters:");
+//         Serial.println(cm);
         
         Serial.println("Back");
         digitalWrite(motor0_dirPin, LOW);
         digitalWrite(motor1_dirPin, LOW);
         PID();
+        
         break;  // breaks out of the switch loop and continues the original search
 
       case 'L':  // Moves Left
-        digitalWrite(trigPin, LOW);
-        delayMicroseconds(30);
-        digitalWrite(trigPin, HIGH);
-        delayMicroseconds(30);
-        pinMode(echoPin, INPUT);
-        duration = pulseIn(echoPin, HIGH);
-        cm = (duration/2)/29.1;
-        Serial.print("Centimeters:");
-        Serial.println(cm);
+//        digitalWrite(trigPin, LOW);
+//        delayMicroseconds(30);
+//        digitalWrite(trigPin, HIGH);
+//        delayMicroseconds(30);
+//        pinMode(echoPin, INPUT);
+//        duration = pulseIn(echoPin, HIGH);
+//        cm = (duration/2)/29.1;
+//        Serial.print("Centimeters:");
+//        Serial.println(cm);
         
         Serial.println("Left");
         digitalWrite(motor0_dirPin, LOW);
         digitalWrite(motor1_dirPin, HIGH);
         analogWrite(motor0_pwmPin, 0);
         analogWrite(motor1_pwmPin, 255);
+        
         break;  // breaks out of the switch loop and continues the original search
 
       case 'R':  // Moves Right
-        digitalWrite(trigPin, LOW);
-        delayMicroseconds(30);
-        digitalWrite(trigPin, HIGH);
-        delayMicroseconds(30);
-        pinMode(echoPin, INPUT);
-        duration = pulseIn(echoPin, HIGH);
-        cm = (duration/2)/29.1;
-        Serial.print("Centimeters:");
-        Serial.println(cm);
+//         digitalWrite(trigPin, LOW);
+//         delayMicroseconds(30);
+//         digitalWrite(trigPin, HIGH);
+//         delayMicroseconds(30);
+//         pinMode(echoPin, INPUT);
+//         duration = pulseIn(echoPin, HIGH);
+//         cm = (duration/2)/29.1;
+//         Serial.print("Centimeters:");
+//         Serial.println(cm);
       
         Serial.println("RIGHT");
         digitalWrite(motor0_dirPin, HIGH);
         digitalWrite(motor1_dirPin, LOW);
         analogWrite(motor0_pwmPin, 255);
         analogWrite(motor1_pwmPin, 0);
+        
         break;  // breaks out of the switch loop and continues the original search
 
       case 'S':  // Stops all the motors, makes all pins low
@@ -414,9 +417,9 @@ void loop()
 //stops when the robot falls down from the table
 void moveForward() {  
     //low is nearby, high is far
-  in = digitalRead(IRPin);
-  Serial.print("LDR:");
-  Serial.println(in);
+//  in = digitalRead(IRPin);
+//  Serial.print("LDR:");
+//  Serial.println(in);
   digitalWrite(trigPin, LOW);
   delayMicroseconds(30);
   digitalWrite(trigPin, HIGH);
@@ -425,9 +428,12 @@ void moveForward() {
   duration = pulseIn(echoPin, HIGH);
   //convert the time into distance: 29ms per cm
   cm = (duration/2)/29.1;
-  Serial.println("Centimeters:" + cm);
-  if (in == 1){
+  Serial.print("Centimeters:");
+  Serial.println(cm);
+  
+  if (cm < 10){
     //stop
+    Serial.println("FLAG");
     digitalWrite(motor0_pwmPin, HIGH);//1 high 2 low is clockwise
     digitalWrite(motor0_dirPin, LOW);
     digitalWrite(motor1_pwmPin, HIGH);
@@ -439,14 +445,15 @@ void moveForward() {
   }
   else {
     //move
-    PID();
     Serial.println("move");
+    PID();
+    
   }
   //check again
    if (in == 1 || cm < 10){
-   if( in == 1)
+   if(cm < 10)
     //stop
-    Serial.println("FLAG");
+    Serial.println("FLAG2");
     digitalWrite(motor0_pwmPin, HIGH);//1 high 2 low is clockwise
     digitalWrite(motor0_dirPin, LOW);
     digitalWrite(motor1_pwmPin, HIGH);
